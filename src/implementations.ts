@@ -3,7 +3,6 @@ import SmenkySmsReader from './definitions';
 import { DeviceEventEmitter, PermissionsAndroid } from 'react-native';
 import type { SMSMessage } from './model';
 
-
 // TODO: Move this to the Native side.
 // TODO: Once this is moved, remove the `start` and `stop` functions and just add defitions into `index.ts` file.
 const requestRequiredPermissions = async () => {
@@ -19,16 +18,16 @@ const requestRequiredPermissions = async () => {
       }
     );
 
-    console.log("SMS Permission ->", granted);
+    console.log('SMS Permission ->', granted);
   } catch (err) {
     console.warn(err);
   }
-}
+};
 
 export const startSMSBroadcast = async () => {
   await requestRequiredPermissions();
   SmenkySmsReader.startSMSBroadcast();
-}
+};
 
 export const stopSMSBroadcast = () => SmenkySmsReader.stopSMSBroadcast();
 
@@ -38,7 +37,7 @@ export const useSMSReceiver = (): SMSMessage | undefined => {
   useEffect(() => {
     const emitter = DeviceEventEmitter.addListener(
       SmenkySmsReader.getConstants().RECEIVE_SMS_BROADCAST_EVENT,
-      setEvent,
+      setEvent
     );
 
     return () => {
@@ -47,4 +46,4 @@ export const useSMSReceiver = (): SMSMessage | undefined => {
   }, []);
 
   return event;
-}
+};

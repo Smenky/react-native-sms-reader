@@ -1,4 +1,4 @@
-import { NativeModules, Platform } from "react-native";
+import { NativeModules, Platform } from 'react-native';
 
 interface SmenkySmsReaderDefinitions {
   getConstants(): { RECEIVE_SMS_BROADCAST_EVENT: string };
@@ -15,12 +15,12 @@ const LINKING_ERROR =
 const SmenkySmsReader = NativeModules.SmenkySmsReader
   ? NativeModules.SmenkySmsReader
   : new Proxy(
-    {},
-    {
-      get() {
-        throw new Error(LINKING_ERROR);
-      },
-    }
-  );
+      {},
+      {
+        get() {
+          throw new Error(LINKING_ERROR);
+        },
+      }
+    );
 
 export default SmenkySmsReader as SmenkySmsReaderDefinitions;
