@@ -1,5 +1,11 @@
 import { NativeModules, Platform } from 'react-native';
 
+interface SmenkySmsReaderDefinitions {
+  getConstants(): { RECEIVE_SMS_BROADCAST_EVENT: string };
+  startSMSBroadcast(): void;
+  stopSMSBroadcast(): void;
+}
+
 const LINKING_ERROR =
   `The package 'react-native-smenky-sms-reader' doesn't seem to be linked. Make sure: \n\n` +
   Platform.select({ ios: "- You have run 'pod install'\n", default: '' }) +
@@ -17,6 +23,4 @@ const SmenkySmsReader = NativeModules.SmenkySmsReader
       }
     );
 
-export function multiply(a: number, b: number): Promise<number> {
-  return SmenkySmsReader.multiply(a, b);
-}
+export default SmenkySmsReader as SmenkySmsReaderDefinitions;
