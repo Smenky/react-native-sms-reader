@@ -1,49 +1,90 @@
 import { useEffect, useState } from 'react';
 import SmenkySmsReader from './definitions';
-import { DeviceEventEmitter, PermissionsAndroid } from 'react-native';
+import { PermissionsAndroid, DeviceEventEmitter, Platform } from 'react-native';
 import type { SMSMessage } from './model';
 
-// TODO: Move this to the Native side.
-// TODO: Once this is moved, remove the `start` and `stop` functions and just add defitions into `index.ts` file.
-const requestRequiredPermissions = async () => {
-  try {
-    const granted = await PermissionsAndroid.request(
-      'android.permission.RECEIVE_SMS',
-      {
-        title: 'Receive SMS Permission',
-        message: 'This permission is required to read your SMS',
-        buttonNeutral: 'Ask Me Later',
-        buttonNegative: 'Decline',
-        buttonPositive: 'Grant permission',
-      }
-    );
+const ANDROID_RECEIVE_SMS_PERMISSION = 'android.permission.RECEIVE_SMS';
 
-    console.log('SMS Permission ->', granted);
-  } catch (err) {
-    console.warn(err);
-  }
+type OnSMSReceived = (sms: SMSMessage) => void;
+
+type OS = 'android' | 'ios';
+type OnPermissionGranted = (os: OS) => void;
+type OnNotPermissionGranted = (os: OS, err?: Error) => void;
+
+const hasAndroidPermission = (): Promise<boolean> => {
+  return PermissionsAndroid.check(ANDROID_RECEIVE_SMS_PERMISSION);
 };
 
-export const startSMSBroadcast = async () => {
-  await requestRequiredPermissions();
-  SmenkySmsReader.startSMSBroadcast();
+const hasIOSPermission = (): boolean => {
+  return false;
 };
 
-export const stopSMSBroadcast = () => SmenkySmsReader.stopSMSBroadcast();
-
-export const useSMSReceiver = (): SMSMessage | undefined => {
-  const [event, setEvent] = useState<SMSMessage | undefined>();
+export const useSMSReceivedCallback = (
+  callback: OnSMSReceived,
+  onNotPermissionGranted?: OnNotPermissionGranted
+) => {
+  const [androidGranted, setAndroidGranted] = useState<boolean>(false);
 
   useEffect(() => {
+    hasAndroidPermission()
+      .then(setAndroidGranted)
+      .catch(() => setAndroidGranted(false));
+
+    if (
+      (Platform.OS === 'android' && !androidGranted) ||
+      (Platform.OS === 'ios' && !hasIOSPermission())
+    ) {
+      onNotPermissionGranted?.(Platform.OS);
+    }
+
     const emitter = DeviceEventEmitter.addListener(
       SmenkySmsReader.getConstants().RECEIVE_SMS_BROADCAST_EVENT,
-      setEvent
+      callback
     );
 
     return () => {
       emitter.remove();
     };
-  }, []);
+  }, [callback, onNotPermissionGranted, androidGranted]);
+};
 
-  return event;
+const requestAndroidPermissions = async (
+  onGranted: OnPermissionGranted,
+  onDenied: OnNotPermissionGranted
+) => {
+  try {
+    const granted = await PermissionsAndroid.request(
+      ANDROID_RECEIVE_SMS_PERMISSION
+    );
+
+    if (granted === 'granted') {
+      onGranted('android');
+    } else {
+      onDenied('android');
+    }
+  } catch (err) {
+    onDenied('android', new Error(`${err}`));
+  }
+};
+
+const requestIOSPermissions = async () => {
+  // TODO: Not implemented yet
+};
+
+export const requestRequiredPermissions = async (
+  onGranted?: OnPermissionGranted,
+  onDenied?: OnNotPermissionGranted
+) => {
+  if (Platform.OS === 'android') {
+    await requestAndroidPermissions(
+      (os) => onGranted?.(os),
+      (os, err) => onDenied?.(os, err)
+    );
+    return;
+  }
+
+  if (Platform.OS === 'ios') {
+    await requestIOSPermissions();
+    return;
+  }
 };
