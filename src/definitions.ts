@@ -1,4 +1,10 @@
-import { NativeModules, Platform } from 'react-native';
+import { NativeModules, Platform } from "react-native";
+
+interface SmenkySmsReaderDefinitions {
+  getConstants(): { RECEIVE_SMS_BROADCAST_EVENT: string };
+  startSMSBroadcast(): void;
+  stopSMSBroadcast(): void;
+}
 
 const LINKING_ERROR =
   `The package 'react-native-smenky-sms-reader' doesn't seem to be linked. Make sure: \n\n` +
@@ -9,14 +15,12 @@ const LINKING_ERROR =
 const SmenkySmsReader = NativeModules.SmenkySmsReader
   ? NativeModules.SmenkySmsReader
   : new Proxy(
-      {},
-      {
-        get() {
-          throw new Error(LINKING_ERROR);
-        },
-      }
-    );
+    {},
+    {
+      get() {
+        throw new Error(LINKING_ERROR);
+      },
+    }
+  );
 
-export function multiply(a: number, b: number): Promise<number> {
-  return SmenkySmsReader.multiply(a, b);
-}
+export default SmenkySmsReader as SmenkySmsReaderDefinitions;
