@@ -6,12 +6,6 @@ interface SmenkySmsReaderDefinitions {
   stopSMSBroadcast(): void;
 }
 
-interface SmenkySmsReaderDefinitions {
-  getConstants(): { RECEIVE_SMS_BROADCAST_EVENT: string };
-  startSMSBroadcast(): void;
-  stopSMSBroadcast(): void;
-}
-
 const LINKING_ERROR =
   `The package 'react-native-smenky-sms-reader' doesn't seem to be linked. Make sure: \n\n` +
   Platform.select({ ios: "- You have run 'pod install'\n", default: '' }) +
