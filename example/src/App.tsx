@@ -1,14 +1,22 @@
-import React from 'react';
+import React, { useState } from 'react';
 
 import { StyleSheet, View, Text } from 'react-native';
-import { useSMSReceiver } from 'react-native-smenky-sms-reader';
+import {
+  useSMSReceivedCallback,
+  type SMSMessage,
+  requestRequiredPermissions,
+} from 'react-native-smenky-sms-reader';
 
 export default function App() {
-  const event = useSMSReceiver();
+  const [latestSMS, onLatestSMS] = useState<SMSMessage | undefined>();
+  useSMSReceivedCallback(onLatestSMS, (_) => {
+    requestRequiredPermissions();
+  });
 
   return (
     <View style={styles.container}>
-      <Text>Result: {event?.bodyContent}</Text>
+      <Text>Number: {latestSMS?.origin}</Text>
+      <Text>Body: {latestSMS?.bodyContent}</Text>
     </View>
   );
 }
