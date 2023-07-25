@@ -34,7 +34,6 @@ class SmenkySmsReaderModule(reactContext: ReactApplicationContext) :
 
   @ReactMethod
   fun startSMSBroadcast() {
-    // TODO: Implement Permissions on Android Native
     registerReceiver()
   }
 
